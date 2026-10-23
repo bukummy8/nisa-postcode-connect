@@ -2,9 +2,44 @@
 
 **A postcode and address workflow prototype by NISA Technology.**
 
-NISA Postcode Connect explores how a simple, accessible digital experience can help users enter postcode and address details and prepare information for postcode-related workflows in Nigeria.
+NISA Postcode Connect is a full-stack web application prototype exploring how a simple, accessible digital experience can help users enter postcode and address details for postcode-related workflows in Nigeria.
 
-> **Project status:** Prototype in active development. Official NIPOST API access and integration are pending approval and credentials. The current application validates postcode format only; it does not verify postcodes against an official NIPOST database.
+**Live application:** https://nisa-postcode-connect.vercel.app/
+
+**Backend API:** https://nisa-postcode-connect.onrender.com
+
+**API health check:** https://nisa-postcode-connect.onrender.com/api/health
+
+> **Project status:** Deployed prototype in active development. The frontend and backend are live and connected. Official NIPOST API access and integration remain pending approval and credentials. The current application validates postcode format only; it does not verify postcodes against an official NIPOST database.
+
+## Live Deployment
+
+| Component | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | https://nisa-postcode-connect.vercel.app/ |
+| Backend API | Render | https://nisa-postcode-connect.onrender.com |
+| API health check | Render | https://nisa-postcode-connect.onrender.com/api/health |
+| Source code | GitHub | https://github.com/bukummy8/nisa-postcode-connect |
+
+The frontend communicates with the Express backend through the `VITE_API_BASE_URL` environment variable. The backend uses `FRONTEND_URL` to configure the allowed frontend origin for CORS.
+
+### Deployment Configuration
+
+**Vercel frontend**
+- Root directory: `client`
+- Framework: Vite
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variable: `VITE_API_BASE_URL`
+
+**Render backend**
+- Root directory: `server`
+- Build command: `npm ci`
+- Start command: `npm start`
+- Health-check path: `/api/health`
+- Environment variable: `FRONTEND_URL`
+
+Set environment variable values in the hosting provider dashboards. Do not commit credentials or private environment files to Git.
 
 ## Project Goals
 
@@ -16,24 +51,28 @@ NISA Postcode Connect explores how a simple, accessible digital experience can h
 
 ## Current Features
 
-- React-based frontend built with Vite.
+- React frontend built with Vite.
 - Postcode format validation and normalization.
 - Address form validation.
-- Express backend with a health-check endpoint.
+- Express backend with an API health-check endpoint.
 - Security middleware using Helmet and CORS.
 - Automated frontend and backend tests.
 - GitHub Actions workflow for testing, building, and linting.
+- Deployed frontend and backend with a working API health check.
 
 ## Technology Stack
 
 | Area | Technologies |
-| --- | --- |
+|---|---|
 | Frontend | React, Vite, JavaScript, CSS |
 | Backend | Node.js, Express |
 | API security | Helmet, CORS |
+| Configuration | dotenv, environment variables |
 | Testing | Node.js test runner, Supertest |
 | Code quality | Oxlint |
 | CI/CD | GitHub Actions |
+| Frontend hosting | Vercel |
+| Backend hosting | Render |
 | Version control | Git and GitHub |
 
 ## Project Structure
@@ -85,11 +124,10 @@ npm ci --prefix client
 In one terminal:
 
 ```bash
-cd ~/Projects/nisa-postcode-connect
 npm run dev --prefix server
 ```
 
-The API runs at:
+The API runs locally at:
 
 `http://localhost:5000`
 
@@ -99,10 +137,9 @@ Health endpoint:
 
 ### Start the frontend
 
-In a second terminal:
+In a second terminal, from the repository root:
 
 ```bash
-cd ~/Projects/nisa-postcode-connect
 npm run dev --prefix client
 ```
 
@@ -111,6 +148,8 @@ Open the local URL printed by Vite, normally:
 `http://localhost:5173`
 
 Keep both development servers running while using the application.
+
+The frontend defaults to the local backend URL. To configure a different API endpoint, set `VITE_API_BASE_URL` in the frontend environment.
 
 ## Quality Checks
 
@@ -122,7 +161,9 @@ Run these commands from the repository root.
 npm test
 ```
 
-The root test command runs the backend and frontend test suites.
+The root test command runs both the backend and frontend test suites.
+
+**Latest verified result:** 12 tests passed — 4 backend tests and 8 frontend validation tests.
 
 ### Build the frontend
 
@@ -130,13 +171,17 @@ The root test command runs the backend and frontend test suites.
 npm run build
 ```
 
+The production build completed successfully in the latest local verification.
+
 ### Run lint checks
 
 ```bash
 npm run lint
 ```
 
-GitHub Actions runs the automated tests, production build, and lint checks on pushes and pull requests.
+The latest local verification completed with zero warnings and zero errors.
+
+GitHub Actions runs automated tests, the production build, and lint checks on pushes and pull requests.
 
 ## API Health Check
 
@@ -155,35 +200,55 @@ Example response:
 }
 ```
 
-The timestamp returned by the running service is generated dynamically.
+The timestamp is generated dynamically by the running service.
 
 ## Postcode Validation and Official Integration
 
-The current validation logic checks the format of the entered postcode. A format check is not proof that a postcode exists or that it corresponds to a particular address.
+The current validation logic checks postcode format and required address fields. A format check is not proof that a postcode exists or corresponds to a particular address.
 
 Official NIPOST verification, authoritative postcode lookup, and production API integration are not yet implemented. They require authorized API access, credentials, and integration testing.
 
-## Security Notes
+The project will only claim official postcode verification after the authorized service has been integrated and its responses have been tested.
 
+## Security Status
+
+The production backend dependency audit has reported zero vulnerabilities:
+
+```bash
+npm audit --prefix server --omit=dev
+```
+
+The full backend development dependency audit has reported high-severity findings involving the `braces` dependency chain used through Nodemon and Chokidar. These findings remain under investigation; the project should not be described as completely vulnerability-free until they are resolved or appropriately mitigated.
+
+Avoid blindly running `npm audit fix --force`, as forced dependency changes can introduce breaking updates.
+
+Security practices:
 - Never commit API keys, access tokens, passwords, private keys, or real `.env` files.
-- Store future credentials in environment variables or an appropriate secrets manager.
-- Review the repository's security and configuration settings before production deployment.
-- Use authorized API access and follow the provider's terms and data-handling requirements.
+- Store credentials in environment variables or an appropriate secrets manager.
+- Review dependency advisories and update packages with compatible, tested versions.
+- Restrict CORS to the intended frontend origin.
+- Use authorized API access and follow provider data-handling requirements.
 
 ## Roadmap
 
+- [ ] Resolve the development dependency security findings.
 - [ ] Complete official NIPOST API onboarding.
 - [ ] Integrate an authorized postcode lookup API when access is granted.
 - [ ] Add authoritative postcode and address verification.
-- [ ] Expand automated tests for lookup and error-handling flows.
-- [ ] Prepare production deployment and operational monitoring.
+- [ ] Expand automated tests for lookup, network errors, and failure handling.
+- [x] Deploy the frontend and backend.
+- [x] Verify the API health check and frontend-to-backend connection.
+- [x] Establish automated tests, production build, and lint checks.
 - [ ] Improve accessibility and user feedback.
+- [ ] Add operational monitoring and deployment documentation.
 
 ## About NISA Technology
 
 NISA Technology builds software and digital solutions, with a focus on software engineering and DevOps practices.
 
-Website: https://nisa-technology.vercel.app/
+**Website:** https://nisa-technology.vercel.app/
+
+**GitHub repository:** https://github.com/bukummy8/nisa-postcode-connect
 
 ## License
 
